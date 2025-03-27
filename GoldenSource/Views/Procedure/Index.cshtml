@@ -1,0 +1,113 @@
+@model IEnumerable<GoldenSource.Models.Procedure>
+
+@{
+    ViewData["Title"] = "Procédures";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Procédures</h1>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form asp-action="Index" method="get" class="form-inline">
+                <div class="input-group w-100">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Rechercher une procédure..." value="@ViewData["SearchTerm"]">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 text-right">
+            <a asp-action="Create" class="btn btn-success">
+                <i class="fas fa-plus"></i> Nouvelle Procédure
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Département</th>
+                                    <th>Niveau d'accès</th>
+                                    <th>Date de création</th>
+                                    <th>Date d'échéance</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var procedure in Model)
+                                {
+                                    var isExpired = procedure.ExpirationDate < DateTime.UtcNow;
+                                    var isExpiringSoon = procedure.ExpirationDate < DateTime.UtcNow.AddMonths(6) && !isExpired;
+                                    var rowClass = isExpired ? "table-danger" : (isExpiringSoon ? "table-warning" : "");
+
+                                    <tr class="@rowClass">
+                                        <td>@procedure.Title</td>
+                                        <td>@procedure.Department</td>
+                                        <td>
+                                            <span class="badge badge-@(procedure.AccessLevel switch {
+                                                AccessLevel.C1 => "info",
+                                                AccessLevel.C2 => "warning",
+                                                AccessLevel.C3 => "danger",
+                                                _ => "secondary"
+                                            })">
+                                                @procedure.AccessLevel
+                                            </span>
+                                        </td>
+                                        <td>@procedure.CreationDate.ToString("dd/MM/yyyy")</td>
+                                        <td>@procedure.ExpirationDate.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a asp-action="Details" asp-route-id="@procedure.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@procedure.Id" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <form asp-action="Archive" asp-route-id="@procedure.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir archiver cette procédure ?')">
+                                                            <i class="fas fa-archive"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialisation de DataTables pour la pagination et le tri
+            $('.table').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+                }
+            });
+        });
+    </script>
+} 

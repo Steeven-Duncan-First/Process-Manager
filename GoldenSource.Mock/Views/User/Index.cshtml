@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Utilisateurs";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Utilisateurs</h2>
+        </div>
+        <div class="col text-right">
+            <button class="btn btn-primary" id="create-user">
+                <i class="fas fa-plus"></i> Nouvel Utilisateur
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    Filtres
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Département</label>
+                        <select class="form-control" id="department-filter">
+                            <option value="">Tous</option>
+                            <option value="Réseau">Réseau</option>
+                            <option value="Opérations">Opérations</option>
+                            <option value="Cartes">Cartes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Service</label>
+                        <select class="form-control" id="service-filter">
+                            <option value="">Tous</option>
+                            <option value="Accueil">Accueil</option>
+                            <option value="Virements">Virements</option>
+                            <option value="Cartes">Cartes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Statut</label>
+                        <select class="form-control" id="status-filter">
+                            <option value="">Tous</option>
+                            <option value="active">Actif</option>
+                            <option value="inactive">Inactif</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="search-input" placeholder="Rechercher un utilisateur...">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="search-button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Code Employé</th>
+                                    <th>Département</th>
+                                    <th>Service</th>
+                                    <th>Fonction</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table">
+                                <!-- Les utilisateurs seront injectés ici -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Charger les utilisateurs
+            loadUsers();
+
+            // Gestionnaires d'événements
+            $('#search-button').click(function() {
+                loadUsers();
+            });
+
+            $('#department-filter, #service-filter, #status-filter').change(function() {
+                loadUsers();
+            });
+
+            $('#create-user').click(function() {
+                // Simuler l'ouverture du formulaire de création
+                alert('Ouverture du formulaire de création d\'utilisateur');
+            });
+
+            function loadUsers() {
+                // Simuler le chargement des utilisateurs
+                const users = [
+                    {
+                        id: "user1",
+                        firstName: "Jean",
+                        lastName: "Dupont",
+                        employeeCode: "EMP001",
+                        department: "Réseau",
+                        service: "Accueil",
+                        function: "Conseiller",
+                        status: "active"
+                    },
+                    {
+                        id: "user2",
+                        firstName: "Marie",
+                        lastName: "Martin",
+                        employeeCode: "EMP002",
+                        department: "Opérations",
+                        service: "Virements",
+                        function: "Opérateur",
+                        status: "active"
+                    }
+                ];
+
+                const tbody = $('#users-table');
+                tbody.empty();
+
+                users.forEach(user => {
+                    const tr = $('<tr>');
+                    tr.append(`<td>${user.firstName} ${user.lastName}</td>`);
+                    tr.append(`<td>${user.employeeCode}</td>`);
+                    tr.append(`<td>${user.department}</td>`);
+                    tr.append(`<td>${user.service}</td>`);
+                    tr.append(`<td>${user.function}</td>`);
+                    tr.append(`<td><span class="badge badge-${user.status === 'active' ? 'success' : 'secondary'}">${user.status}</span></td>`);
+                    tr.append(`
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewUser('${user.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editUser('${user.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `);
+                    tbody.append(tr);
+                });
+            }
+
+            // Fonctions globales pour les actions
+            window.viewUser = function(id) {
+                alert(`Visualisation de l'utilisateur ${id}`);
+            };
+
+            window.editUser = function(id) {
+                alert(`Modification de l'utilisateur ${id}`);
+            };
+
+            window.deleteUser = function(id) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+                    alert(`Suppression de l'utilisateur ${id}`);
+                }
+            };
+        });
+    </script>
+
+    <style>
+        .table th {
+            background-color: #f8f9fa;
+        }
+
+        .badge {
+            font-size: 0.9em;
+        }
+
+        .btn-sm {
+            margin-right: 0.25rem;
+        }
+    </style>
+} 

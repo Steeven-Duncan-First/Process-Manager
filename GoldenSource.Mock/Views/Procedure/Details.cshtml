@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "Détails de la Procédure";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="procedure-title">Chargement...</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" id="download-pdf">
+                            <i class="fas fa-download"></i> Télécharger PDF
+                        </button>
+                        <button class="btn btn-outline-primary" id="print-procedure">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Informations générales</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Département :</th>
+                                    <td id="procedure-department">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Services concernés :</th>
+                                    <td id="procedure-services">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Niveau d'accès :</th>
+                                    <td id="procedure-access-level">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Dates</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Création :</th>
+                                    <td id="procedure-creation-date">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Dernière modification :</th>
+                                    <td id="procedure-last-modified">-</td>
+                                </tr>
+                                <tr>
+                                    <th>Expiration :</th>
+                                    <td id="procedure-expiration">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Recommandations</h6>
+                        <p id="procedure-recommendations" class="text-muted">-</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Document</h6>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <iframe class="embed-responsive-item" id="procedure-document" src=""></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Historique des modifications</h5>
+                </div>
+                <div class="card-body">
+                    <div id="modification-history">
+                        <!-- L'historique sera injecté ici -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group-vertical w-100">
+                        <button class="btn btn-outline-primary mb-2" id="edit-procedure">
+                            <i class="fas fa-edit"></i> Modifier
+                        </button>
+                        <button class="btn btn-outline-success mb-2" id="create-version">
+                            <i class="fas fa-code-branch"></i> Créer une version
+                        </button>
+                        <button class="btn btn-outline-warning mb-2" id="extend-validity">
+                            <i class="fas fa-calendar-plus"></i> Prolonger la validité
+                        </button>
+                        <button class="btn btn-outline-danger" id="archive-procedure">
+                            <i class="fas fa-archive"></i> Archiver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const procedureId = window.location.pathname.split('/').pop();
+            const currentUserId = 'user1'; // ID utilisateur simulé
+
+            // Charger les détails de la procédure
+            loadProcedureDetails();
+
+            // Gestionnaires d'événements
+            $('#download-pdf').click(downloadPDF);
+            $('#print-procedure').click(printProcedure);
+            $('#edit-procedure').click(editProcedure);
+            $('#create-version').click(createVersion);
+            $('#extend-validity').click(extendValidity);
+            $('#archive-procedure').click(archiveProcedure);
+
+            function loadProcedureDetails() {
+                $.get(`/api/procedure/${procedureId}?userId=${currentUserId}`)
+                    .done(function(procedure) {
+                        $('#procedure-title').text(procedure.title);
+                        $('#procedure-department').text(procedure.department);
+                        $('#procedure-services').text(procedure.affectedServices);
+                        $('#procedure-access-level').text(procedure.accessLevel);
+                        $('#procedure-creation-date').text(new Date(procedure.creationDate).toLocaleDateString());
+                        $('#procedure-last-modified').text(new Date(procedure.lastModifiedDate).toLocaleDateString());
+                        $('#procedure-expiration').text(new Date(procedure.expirationDate).toLocaleDateString());
+                        $('#procedure-recommendations').text(procedure.recommendations);
+                        $('#procedure-document').attr('src', procedure.documentPath);
+
+                        // Mettre à jour l'historique des modifications
+                        updateModificationHistory(procedure);
+                    });
+            }
+
+            function updateModificationHistory(procedure) {
+                const history = $('#modification-history');
+                history.empty();
+
+                // Simuler l'historique des modifications
+                const modifications = [
+                    {
+                        date: procedure.lastModifiedDate,
+                        user: procedure.lastModifiedBy,
+                        action: 'Dernière modification'
+                    },
+                    {
+                        date: procedure.creationDate,
+                        user: procedure.createdBy,
+                        action: 'Création'
+                    }
+                ];
+
+                modifications.forEach(mod => {
+                    const item = $('<div>').addClass('mb-3');
+                    item.append($('<div>').addClass('d-flex justify-content-between')
+                        .append($('<small>').text(new Date(mod.date).toLocaleDateString()))
+                        .append($('<small>').text(mod.user)));
+                    item.append($('<div>').text(mod.action));
+                    history.append(item);
+                });
+            }
+
+            function downloadPDF() {
+                // Simuler le téléchargement
+                alert('Téléchargement du PDF en cours...');
+            }
+
+            function printProcedure() {
+                window.print();
+            }
+
+            function editProcedure() {
+                window.location.href = `/Procedure/Edit/${procedureId}`;
+            }
+
+            function createVersion() {
+                if (confirm('Voulez-vous créer une nouvelle version de cette procédure ?')) {
+                    // Simuler la création d'une version
+                    alert('Création d\'une nouvelle version en cours...');
+                }
+            }
+
+            function extendValidity() {
+                const newDate = prompt('Entrez la nouvelle date d\'expiration (YYYY-MM-DD) :');
+                if (newDate) {
+                    // Simuler la prolongation
+                    alert('Prolongation de la validité en cours...');
+                }
+            }
+
+            function archiveProcedure() {
+                if (confirm('Êtes-vous sûr de vouloir archiver cette procédure ?')) {
+                    $.post(`/api/procedure/${procedureId}/archive?userId=${currentUserId}`)
+                        .done(function() {
+                            window.location.href = '/Procedure';
+                        });
+                }
+            }
+        });
+    </script>
+
+    <style>
+        @media print {
+            .btn-group, .card-header .btn-group {
+                display: none;
+            }
+            .embed-responsive {
+                height: 800px !important;
+            }
+        }
+        .embed-responsive {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+    </style>
+} 

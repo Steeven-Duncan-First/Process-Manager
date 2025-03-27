@@ -1,0 +1,159 @@
+@{
+    ViewData["Title"] = "Accueil";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Tableau de bord</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Procédures actives</h6>
+                            <h2 class="mb-0">150</h2>
+                        </div>
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Utilisateurs actifs</h6>
+                            <h2 class="mb-0">45</h2>
+                        </div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Procédures expirantes</h6>
+                            <h2 class="mb-0">5</h2>
+                        </div>
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Départements</h6>
+                            <h2 class="mb-0">8</h2>
+                        </div>
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Procédures récentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Procédure d'ouverture de compte particulier</h6>
+                                <small>Il y a 3 jours</small>
+                            </div>
+                            <p class="mb-1">Mise à jour par Jean Dupont</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Procédure de virement SEPA</h6>
+                                <small>Il y a 5 jours</small>
+                            </div>
+                            <p class="mb-1">Mise à jour par Marie Martin</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Procédure de demande de carte</h6>
+                                <small>Il y a 1 semaine</small>
+                            </div>
+                            <p class="mb-1">Mise à jour par Pierre Durand</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Questions fréquentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Comment ouvrir un compte particulier ?</h6>
+                                <small>150 consultations</small>
+                            </div>
+                            <p class="mb-1">La procédure d'ouverture de compte particulier se trouve dans la section 'Réseau'...</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Comment effectuer un virement SEPA ?</h6>
+                                <small>120 consultations</small>
+                            </div>
+                            <p class="mb-1">La procédure de virement SEPA est disponible dans la section 'Opérations'...</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Simuler le chargement des statistiques
+            function loadStats() {
+                // Les statistiques sont déjà affichées dans le HTML
+                // Dans une vraie application, on ferait un appel API ici
+            }
+
+            loadStats();
+        });
+    </script>
+
+    <style>
+        .card {
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .list-group-item {
+            transition: background-color 0.2s;
+        }
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+} 

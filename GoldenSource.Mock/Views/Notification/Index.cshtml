@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Notifications</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" id="mark-all-read">
+                            <i class="fas fa-check-double"></i> Tout marquer comme lu
+                        </button>
+                        <button class="btn btn-outline-danger" id="clear-all">
+                            <i class="fas fa-trash"></i> Tout effacer
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="list-group" id="notifications-list">
+                        <!-- Les notifications seront injectées ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const currentUserId = 'user1'; // ID utilisateur simulé
+
+            // Charger les notifications
+            loadNotifications();
+
+            // Gestionnaires d'événements
+            $('#mark-all-read').click(markAllAsRead);
+            $('#clear-all').click(clearAllNotifications);
+
+            function loadNotifications() {
+                $.get(`/api/notification/user/${currentUserId}`)
+                    .done(function(notifications) {
+                        const container = $('#notifications-list');
+                        container.empty();
+
+                        if (notifications.length === 0) {
+                            container.append($('<div>')
+                                .addClass('text-center text-muted p-4')
+                                .text('Aucune notification'));
+                            return;
+                        }
+
+                        notifications.forEach(notification => {
+                            const item = $('<div>')
+                                .addClass('list-group-item list-group-item-action')
+                                .addClass(notification.isRead ? '' : 'list-group-item-primary');
+
+                            const header = $('<div>')
+                                .addClass('d-flex w-100 justify-content-between align-items-center');
+
+                            const title = $('<h6>')
+                                .addClass('mb-1')
+                                .text(notification.title);
+
+                            const date = $('<small>')
+                                .text(new Date(notification.createdDate).toLocaleString());
+
+                            header.append(title, date);
+
+                            const message = $('<p>')
+                                .addClass('mb-1')
+                                .text(notification.message);
+
+                            const actions = $('<div>')
+                                .addClass('mt-2');
+
+                            if (!notification.isRead) {
+                                actions.append($('<button>')
+                                    .addClass('btn btn-sm btn-outline-primary mr-2')
+                                    .text('Marquer comme lu')
+                                    .click(() => markAsRead(notification.id)));
+                            }
+
+                            actions.append($('<button>')
+                                .addClass('btn btn-sm btn-outline-danger')
+                                .text('Supprimer')
+                                .click(() => deleteNotification(notification.id)));
+
+                            item.append(header, message, actions);
+                            container.append(item);
+                        });
+                    });
+            }
+
+            function markAsRead(notificationId) {
+                $.post(`/api/notification/${notificationId}/read`)
+                    .done(function() {
+                        loadNotifications();
+                        updateNotificationCount();
+                    });
+            }
+
+            function markAllAsRead() {
+                if (confirm('Voulez-vous marquer toutes les notifications comme lues ?')) {
+                    $.post(`/api/notification/user/${currentUserId}/mark-all-read`)
+                        .done(function() {
+                            loadNotifications();
+                            updateNotificationCount();
+                        });
+                }
+            }
+
+            function deleteNotification(notificationId) {
+                if (confirm('Voulez-vous supprimer cette notification ?')) {
+                    $.delete(`/api/notification/${notificationId}`)
+                        .done(function() {
+                            loadNotifications();
+                            updateNotificationCount();
+                        });
+                }
+            }
+
+            function clearAllNotifications() {
+                if (confirm('Voulez-vous supprimer toutes les notifications ?')) {
+                    $.delete(`/api/notification/user/${currentUserId}/clear-all`)
+                        .done(function() {
+                            loadNotifications();
+                            updateNotificationCount();
+                        });
+                }
+            }
+
+            function updateNotificationCount() {
+                $.get(`/api/notification/user/${currentUserId}/unread-count`)
+                    .done(function(count) {
+                        // Mettre à jour le compteur dans la barre de navigation
+                        $('#notification-count').text(count);
+                    });
+            }
+        });
+    </script>
+
+    <style>
+        .list-group-item {
+            transition: background-color 0.2s;
+        }
+        .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        .list-group-item-primary {
+            background-color: #e3f2fd;
+        }
+    </style>
+} 

@@ -1,0 +1,443 @@
+@model List<ChatMessage>
+@{
+    ViewData["Title"] = "Assistant de recherche";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card sg-card">
+                <div class="card-header sg-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Assistant de recherche de procédures</h3>
+                    <div class="test-controls">
+                        <button id="toggleTestMode" class="btn btn-sm sg-btn-secondary">
+                            <i class="fas fa-vial"></i> Mode Test
+                        </button>
+                        <button id="clearChat" class="btn btn-sm sg-btn-secondary ml-2">
+                            <i class="fas fa-trash"></i> Effacer
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="chat-messages" class="chat-messages">
+                        @if (!Model.Any())
+                        {
+                            <div class="welcome-message">
+                                <h4>Bienvenue dans l'Assistant de recherche de procédures</h4>
+                                <p>Je peux vous aider à trouver les procédures dont vous avez besoin.</p>
+                                <div class="quick-actions">
+                                    <button class="btn sg-btn-outline quick-action-btn" data-query="procédure d'ouverture de compte">
+                                        <i class="fas fa-user-plus"></i> Ouverture de compte
+                                    </button>
+                                    <button class="btn sg-btn-outline quick-action-btn" data-query="procédure de virement">
+                                        <i class="fas fa-exchange-alt"></i> Virement
+                                    </button>
+                                    <button class="btn sg-btn-outline quick-action-btn" data-query="procédure de carte bancaire">
+                                        <i class="fas fa-credit-card"></i> Carte bancaire
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        @foreach (var message in Model)
+                        {
+                            <div class="message @(message.IsUserMessage ? "user-message" : "bot-message")">
+                                <div class="message-content">
+                                    @message.Response
+                                </div>
+                                @if (!message.IsUserMessage)
+                                {
+                                    <div class="feedback-buttons">
+                                        <button class="btn btn-sm sg-btn-success feedback-btn" 
+                                                data-message-id="@message.Id" 
+                                                data-helpful="true">
+                                            <i class="fas fa-thumbs-up"></i> Utile
+                                        </button>
+                                        <button class="btn btn-sm sg-btn-danger feedback-btn" 
+                                                data-message-id="@message.Id" 
+                                                data-helpful="false">
+                                            <i class="fas fa-thumbs-down"></i> Non utile
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="chat-input">
+                        <form id="chat-form" class="d-flex">
+                            <input type="text" id="message-input" class="form-control sg-input" 
+                                   placeholder="Posez votre question..." required>
+                            <button type="submit" class="btn sg-btn-primary ml-2">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const chatMessages = $('#chat-messages');
+            const chatForm = $('#chat-form');
+            const messageInput = $('#message-input');
+            const toggleTestMode = $('#toggleTestMode');
+            const clearChat = $('#clearChat');
+            let isTestMode = false;
+
+            // Test data
+            const testResponses = {
+                "procédure d'ouverture de compte": "J'ai trouvé 2 procédures concernant l'ouverture de compte :\n- Procédure d'ouverture de compte particulier (Niveau d'accès : 1)\n- Procédure d'ouverture de compte professionnel (Niveau d'accès : 2)",
+                "procédure de virement": "J'ai trouvé 1 procédure concernant les virements :\n- Procédure de virement SEPA (Niveau d'accès : 1)",
+                "procédure de carte bancaire": "J'ai trouvé 2 procédures concernant les cartes bancaires :\n- Procédure de demande de carte (Niveau d'accès : 1)\n- Procédure de blocage de carte (Niveau d'accès : 1)"
+            };
+
+            // Scroll to bottom
+            function scrollToBottom() {
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+
+            // Add message to chat
+            function addMessage(message, isUser) {
+                const messageHtml = `
+                    <div class="message ${isUser ? 'user-message' : 'bot-message'}">
+                        <div class="message-content">
+                            ${message}
+                        </div>
+                        ${!isUser ? `
+                            <div class="feedback-buttons">
+                                <button class="btn btn-sm sg-btn-success feedback-btn" 
+                                        data-message-id="${Date.now()}" 
+                                        data-helpful="true">
+                                    <i class="fas fa-thumbs-up"></i> Utile
+                                </button>
+                                <button class="btn btn-sm sg-btn-danger feedback-btn" 
+                                        data-message-id="${Date.now()}" 
+                                        data-helpful="false">
+                                    <i class="fas fa-thumbs-down"></i> Non utile
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                chatMessages.append(messageHtml);
+                scrollToBottom();
+            }
+
+            // Handle form submission
+            chatForm.on('submit', function(e) {
+                e.preventDefault();
+                const message = messageInput.val().trim();
+                if (!message) return;
+
+                // Add user message
+                addMessage(message, true);
+                messageInput.val('');
+
+                if (isTestMode) {
+                    // Simulate bot response in test mode
+                    setTimeout(() => {
+                        const response = testResponses[message.toLowerCase()] || 
+                            "Je n'ai trouvé aucune procédure correspondant à votre recherche. Essayez avec d'autres mots-clés.";
+                        addMessage(response, false);
+                    }, 1000);
+                } else {
+                    // Send to server
+                    $.post('/Chatbot/ProcessMessage', { message: message })
+                        .done(function(response) {
+                            addMessage(response.response, false);
+                        })
+                        .fail(function(error) {
+                            addMessage('Désolé, une erreur est survenue. Veuillez réessayer.', false);
+                        });
+                }
+            });
+
+            // Handle quick action buttons
+            $(document).on('click', '.quick-action-btn', function() {
+                const query = $(this).data('query');
+                messageInput.val(query);
+                chatForm.trigger('submit');
+            });
+
+            // Handle feedback
+            $(document).on('click', '.feedback-btn', function() {
+                const button = $(this);
+                const messageId = button.data('message-id');
+                const isHelpful = button.data('helpful');
+                const feedbackButtons = button.closest('.feedback-buttons');
+
+                // Disable feedback buttons
+                feedbackButtons.find('button').prop('disabled', true);
+
+                if (!isTestMode) {
+                    // Send feedback
+                    $.post('/Chatbot/AddFeedback', {
+                        chatMessageId: messageId,
+                        isHelpful: isHelpful
+                    })
+                    .done(function() {
+                        // Show thank you message
+                        feedbackButtons.html('<small class="text-success">Merci pour votre retour !</small>');
+                    })
+                    .fail(function() {
+                        // Re-enable buttons on error
+                        feedbackButtons.find('button').prop('disabled', false);
+                    });
+                } else {
+                    // In test mode, just show thank you message
+                    feedbackButtons.html('<small class="text-success">Merci pour votre retour !</small>');
+                }
+            });
+
+            // Toggle test mode
+            toggleTestMode.on('click', function() {
+                isTestMode = !isTestMode;
+                $(this).toggleClass('active');
+                $(this).html(isTestMode ? 
+                    '<i class="fas fa-vial"></i> Mode Test (Actif)' : 
+                    '<i class="fas fa-vial"></i> Mode Test');
+            });
+
+            // Clear chat
+            clearChat.on('click', function() {
+                chatMessages.empty();
+                chatMessages.append(`
+                    <div class="welcome-message">
+                        <h4>Bienvenue dans l'Assistant de recherche de procédures</h4>
+                        <p>Je peux vous aider à trouver les procédures dont vous avez besoin.</p>
+                        <div class="quick-actions">
+                            <button class="btn sg-btn-outline quick-action-btn" data-query="procédure d'ouverture de compte">
+                                <i class="fas fa-user-plus"></i> Ouverture de compte
+                            </button>
+                            <button class="btn sg-btn-outline quick-action-btn" data-query="procédure de virement">
+                                <i class="fas fa-exchange-alt"></i> Virement
+                            </button>
+                            <button class="btn sg-btn-outline quick-action-btn" data-query="procédure de carte bancaire">
+                                <i class="fas fa-credit-card"></i> Carte bancaire
+                            </button>
+                        </div>
+                    </div>
+                `);
+            });
+
+            // Initial scroll
+            scrollToBottom();
+        });
+    </script>
+
+    <style>
+        /* Couleurs de la Société Générale */
+        :root {
+            --sg-red: #E60028;
+            --sg-black: #000000;
+            --sg-gray: #666666;
+            --sg-light-gray: #F5F5F5;
+            --sg-white: #FFFFFF;
+        }
+
+        /* Styles généraux */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--sg-light-gray);
+        }
+
+        /* Card styles */
+        .sg-card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .sg-header {
+            background-color: var(--sg-red);
+            color: var(--sg-white);
+            border-radius: 8px 8px 0 0;
+            padding: 1rem;
+        }
+
+        .sg-header .card-title {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Chat messages */
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: var(--sg-white);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            max-width: 80%;
+        }
+
+        .user-message {
+            margin-left: auto;
+        }
+
+        .bot-message {
+            margin-right: auto;
+        }
+
+        .message-content {
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .user-message .message-content {
+            background-color: var(--sg-red);
+            color: var(--sg-white);
+        }
+
+        .bot-message .message-content {
+            background-color: var(--sg-light-gray);
+            border: 1px solid #dee2e6;
+            color: var(--sg-black);
+        }
+
+        /* Buttons */
+        .sg-btn-primary {
+            background-color: var(--sg-red);
+            border-color: var(--sg-red);
+            color: var(--sg-white);
+        }
+
+        .sg-btn-primary:hover {
+            background-color: #cc0024;
+            border-color: #cc0024;
+        }
+
+        .sg-btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: var(--sg-white);
+        }
+
+        .sg-btn-danger {
+            background-color: var(--sg-red);
+            border-color: var(--sg-red);
+            color: var(--sg-white);
+        }
+
+        .sg-btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .sg-btn-danger:hover {
+            background-color: #cc0024;
+            border-color: #cc0024;
+        }
+
+        /* Input */
+        .sg-input {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .sg-input:focus {
+            border-color: var(--sg-red);
+            box-shadow: 0 0 0 0.2rem rgba(230, 0, 40, 0.25);
+        }
+
+        /* Feedback buttons */
+        .feedback-buttons {
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+
+        .feedback-buttons button {
+            margin-left: 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--sg-light-gray);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--sg-gray);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--sg-red);
+        }
+
+        /* Additional styles for test mode */
+        .sg-btn-secondary {
+            background-color: var(--sg-gray);
+            border-color: var(--sg-gray);
+            color: var(--sg-white);
+        }
+
+        .sg-btn-secondary:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+
+        .sg-btn-secondary.active {
+            background-color: var(--sg-red);
+            border-color: var(--sg-red);
+        }
+
+        .sg-btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--sg-red);
+            color: var(--sg-red);
+        }
+
+        .sg-btn-outline:hover {
+            background-color: var(--sg-red);
+            color: var(--sg-white);
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--sg-gray);
+        }
+
+        .welcome-message h4 {
+            color: var(--sg-black);
+            margin-bottom: 1rem;
+        }
+
+        .quick-actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            min-width: 200px;
+            margin: 0.5rem;
+        }
+
+        .test-controls {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+} 
