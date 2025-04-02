@@ -22,9 +22,9 @@ namespace GoldenSourceMock
 
             // Enregistrement des services mock
             services.AddScoped<IMockProcedureService, MockProcedureService>();
-            services.AddScoped<IMockUserService, MockUserService>();
             services.AddScoped<IMockChatbotService, MockChatbotService>();
             services.AddScoped<IMockNotificationService, MockNotificationService>();
+            services.AddScoped<IMockLogService, MockLogService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
