@@ -18,7 +18,8 @@ namespace GoldenSourceMock
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                .AddRazorRuntimeCompilation();
 
             // Enregistrement des services mock
             services.AddScoped<IMockProcedureService, MockProcedureService>();
