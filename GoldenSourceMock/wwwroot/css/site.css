@@ -1,0 +1,111 @@
+/* Styles généraux */
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+  background-color: #f8f9fa;
+}
+
+/* En-tête */
+.navbar-brand {
+    font-weight: bold;
+    color: #e30613 !important; /* Rouge Société Générale */
+}
+
+.navbar {
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+/* Pied de page */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+  background-color: white;
+}
+
+/* Chatbot */
+.chat-messages {
+    background-color: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.message-content {
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    max-width: 80%;
+}
+
+.user-message .message-content {
+    background-color: #e30613;
+    color: white;
+    margin-left: auto;
+}
+
+.bot-message .message-content {
+    background-color: #f8f9fa;
+    color: #212529;
+    margin-right: auto;
+}
+
+.feedback-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
+.feedback-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* FAQs */
+.faq-item {
+    background-color: white;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.faq-item h5 {
+    color: #e30613;
+    margin-bottom: 0.5rem;
+}
+
+/* Boutons */
+.btn-primary {
+    background-color: #e30613;
+    border-color: #e30613;
+}
+
+.btn-primary:hover {
+    background-color: #c70511;
+    border-color: #c70511;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .message-content {
+        max-width: 90%;
+    }
+} 

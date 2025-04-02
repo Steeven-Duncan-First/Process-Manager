@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Chatbot";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Assistant Virtuel</h3>
+                </div>
+                <div class="card-body">
+                    <div id="chat-messages" class="chat-messages" style="height: 400px; overflow-y: auto;">
+                        <!-- Les messages s'afficheront ici -->
+                    </div>
+                    <div class="input-group mt-3">
+                        <input type="text" id="message-input" class="form-control" placeholder="Tapez votre message...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="send-button">Envoyer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Questions Fréquentes</h4>
+                </div>
+                <div class="card-body">
+                    <div id="faq-list">
+                        <!-- Les FAQs s'afficheront ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Charger les FAQs
+            $.get('/Chatbot/GetFAQs', function(faqs) {
+                var faqHtml = '';
+                faqs.forEach(function(faq) {
+                    faqHtml += `
+                        <div class="faq-item mb-3">
+                            <h5>${faq.question}</h5>
+                            <p>${faq.answer}</p>
+                        </div>
+                    `;
+                });
+                $('#faq-list').html(faqHtml);
+            });
+
+            // Envoyer un message
+            $('#send-button').click(sendMessage);
+            $('#message-input').keypress(function(e) {
+                if (e.which == 13) {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                var message = $('#message-input').val();
+                if (!message) return;
+
+                // Afficher le message de l'utilisateur
+                appendMessage(message, true);
+                $('#message-input').val('');
+
+                // Envoyer au serveur
+                $.ajax({
+                    url: '/Chatbot/SendMessage',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message }),
+                    success: function(response) {
+                        appendMessage(response.response, false);
+                    }
+                });
+            }
+
+            function appendMessage(message, isUser) {
+                var messageHtml = `
+                    <div class="message ${isUser ? 'user-message' : 'bot-message'} mb-2">
+                        <div class="message-content p-2 ${isUser ? 'bg-primary text-white' : 'bg-light'} rounded">
+                            ${message}
+                        </div>
+                        ${!isUser ? `
+                            <div class="feedback-buttons mt-1">
+                                <button class="btn btn-sm btn-success feedback-btn" data-helpful="true">
+                                    <i class="fas fa-thumbs-up"></i> Utile
+                                </button>
+                                <button class="btn btn-sm btn-danger feedback-btn" data-helpful="false">
+                                    <i class="fas fa-thumbs-down"></i> Pas utile
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                $('#chat-messages').append(messageHtml);
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }
+
+            // Gérer les retours d'expérience
+            $(document).on('click', '.feedback-btn', function() {
+                var isHelpful = $(this).data('helpful');
+                var messageId = $(this).closest('.message').data('message-id');
+                
+                $.ajax({
+                    url: '/Chatbot/AddFeedback',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        chatMessageId: messageId,
+                        isHelpful: isHelpful,
+                        comment: ''
+                    }),
+                    success: function() {
+                        $(this).closest('.feedback-buttons').html('<small class="text-muted">Merci pour votre retour !</small>');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .chat-messages {
+            padding: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+        }
+
+        .user-message {
+            text-align: right;
+        }
+
+        .bot-message {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .feedback-buttons {
+            text-align: right;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+} 
