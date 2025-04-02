@@ -6,91 +6,109 @@ namespace GoldenSourceMock.Models
 {
     public static class MockData
     {
-        public static List<Procedure> Procedures = new List<Procedure>
+        public static List<Procedure> Procedures { get; } = new List<Procedure>
         {
             new Procedure
             {
                 Id = 1,
-                Title = "Procédure d'ouverture de compte",
+                Title = "Ouverture de compte",
                 DocumentPath = "/documents/ouverture-compte.pdf",
                 AccessLevel = 1,
-                Department = "RBC",
-                AffectedServices = "Service Client, Back Office",
+                Department = "Réseau",
+                Service = "Accueil",
+                Function = "Conseiller",
                 Recommendations = "Vérifier l'identité du client",
-                CreationDate = DateTime.Now.AddDays(-30),
-                ExpirationDate = DateTime.Now.AddMonths(6),
-                IsArchived = false,
-                CreatedBy = "admin",
-                LastModifiedBy = "admin",
-                LastModifiedDate = DateTime.Now
+                CreatedAt = DateTime.Now.AddDays(-30),
+                UpdatedAt = DateTime.Now.AddDays(-5),
+                IsArchived = false
             },
             new Procedure
             {
                 Id = 2,
-                Title = "Procédure de virement international",
-                DocumentPath = "/documents/virement-international.pdf",
+                Title = "Fermeture de compte",
+                DocumentPath = "/documents/fermeture-compte.pdf",
                 AccessLevel = 2,
-                Department = "RBC",
-                AffectedServices = "Service Client, Back Office, Conformité",
-                Recommendations = "Vérifier les sanctions internationales",
-                CreationDate = DateTime.Now.AddDays(-60),
-                ExpirationDate = DateTime.Now.AddMonths(3),
-                IsArchived = false,
-                CreatedBy = "admin",
-                LastModifiedBy = "admin",
-                LastModifiedDate = DateTime.Now
+                Department = "Réseau",
+                Service = "Accueil",
+                Function = "Conseiller",
+                Recommendations = "Vérifier les soldes et les opérations en cours",
+                CreatedAt = DateTime.Now.AddDays(-60),
+                UpdatedAt = DateTime.Now.AddDays(-10),
+                IsArchived = false
             }
         };
 
-        public static List<User> Users = new List<User>
+        public static List<User> Users { get; } = new List<User>
         {
             new User
             {
                 Id = "1",
-                EmployeeCode = "EMP001",
-                UserName = "jean.dupont",
+                UserName = "jdupont",
                 FirstName = "Jean",
                 LastName = "Dupont",
                 Email = "jean.dupont@socgen.com",
-                Department = "RBC",
-                Service = "Service Client",
+                Department = "Réseau",
+                Service = "Accueil",
                 Function = "Conseiller",
                 MaxAccessLevel = 2,
-                Roles = new List<string> { "User", "RBC" },
-                IsActive = true,
-                LastLoginDate = DateTime.Now
+                Roles = string.Join(",", new List<string> { "Utilisateur", "Administrateur" }),
+                IsActive = true
+            },
+            new User
+            {
+                Id = "2",
+                UserName = "mlambert",
+                FirstName = "Marie",
+                LastName = "Lambert",
+                Email = "marie.lambert@socgen.com",
+                Department = "Réseau",
+                Service = "Accueil",
+                Function = "Conseiller",
+                MaxAccessLevel = 1,
+                Roles = "Utilisateur",
+                IsActive = true
             }
         };
 
-        public static List<ChatMessage> ChatMessages = new List<ChatMessage>
+        public static List<ChatMessage> ChatMessages { get; } = new List<ChatMessage>
         {
             new ChatMessage
             {
                 Id = 1,
                 UserId = "1",
-                Message = "Comment ouvrir un compte ?",
-                Language = "fr",
-                Intent = "search_procedure",
-                Response = "Je peux vous aider à trouver la procédure d'ouverture de compte.",
-                Timestamp = DateTime.Now.AddMinutes(-5),
+                Content = "Comment puis-je ouvrir un compte ?",
                 IsUserMessage = true,
-                Confidence = 0.95,
-                RelatedProcedureId = "1"
+                Timestamp = DateTime.Now.AddMinutes(-5)
+            },
+            new ChatMessage
+            {
+                Id = 2,
+                UserId = "1",
+                Content = "Pour ouvrir un compte, suivez la procédure 'Ouverture de compte' qui se trouve dans la section Réseau > Accueil.",
+                IsUserMessage = false,
+                Timestamp = DateTime.Now.AddMinutes(-4)
             }
         };
 
-        public static List<FAQ> FAQs = new List<FAQ>
+        public static List<FAQ> FAQs { get; } = new List<FAQ>
         {
             new FAQ
             {
                 Id = 1,
-                Question = "Comment accéder aux procédures ?",
-                Answer = "Vous pouvez accéder aux procédures via le menu principal ou utiliser la barre de recherche.",
-                Category = "Accès",
-                Language = "fr",
-                Order = 1,
-                IsActive = true,
-                LastUpdated = DateTime.Now
+                Question = "Comment ouvrir un compte ?",
+                Answer = "Pour ouvrir un compte, suivez la procédure 'Ouverture de compte' qui se trouve dans la section Réseau > Accueil.",
+                Category = "Comptes",
+                CreatedAt = DateTime.Now.AddDays(-30),
+                UpdatedAt = DateTime.Now.AddDays(-5)
+            },
+            new FAQ
+            {
+                Id = 2,
+                Question = "Comment fermer un compte ?",
+                Answer = "Pour fermer un compte, suivez la procédure 'Fermeture de compte' qui se trouve dans la section Réseau > Accueil.",
+                Category = "Comptes",
+                CreatedAt = DateTime.Now.AddDays(-30),
+                UpdatedAt = DateTime.Now.AddDays(-5)
             }
         };
 
